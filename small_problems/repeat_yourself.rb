@@ -1,7 +1,5 @@
 def repeat(string, number)
-  number.times do 
-    puts string
-  end
+  
 end
 
 puts "Please enter some words and press enter: "
