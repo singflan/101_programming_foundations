@@ -1,4 +1,4 @@
-VALID_CHOICES = %w(rock paper scissors)
+VALID_CHOICES = %w(r p sc l sp)
 
 def test_method
   prompt('test message')
@@ -9,14 +9,22 @@ def prompt(message)
 end
 
 def win?(first, second)
-  (first == 'rock' && second == 'scissors') ||
-  (first == 'paper' && second == 'rock') ||
-  (first == 'scissors' && second == 'paper')
+  (first == 'r' && second == 'sc') ||
+  (first == 'r' && second == 'l') ||
+  (first == 'p' && second == 'r') ||
+  (first == 'p' && second == 'sp') ||
+  (first == 'sc' && second == 'p') ||
+  (first == 'sc' && second == 'l') ||
+  (first == 'l' && second == 'sp') ||
+  (first == 'l' && second == 'p') ||
+  (first == 'sp' && second == 'sc') ||
+  (first == 'sp' && second == 'r')
 end
 
 def display_results(player, computer)
   if win?(player, computer)
     prompt("You won!")
+    update_score('w')
   elsif win?(computer, player)
     prompt("Computer won!")
   else
@@ -24,10 +32,25 @@ def display_results(player, computer)
   end
 end
 
+player_score = 0
+computer_score = 0
+
+def update_score(win)
+  if win == 'w'
+    player_score += 1
+  else
+    computer_score += 1
+end
+
 loop do
   choice = ''
   loop do
-    prompt("Choose one: #{VALID_CHOICES.join(', ')}")
+    prompt("Choose one:
+                      'r' for rock,
+                      'sc' for scissors,
+                      'p' for paper,
+                      'sp' for spock,
+                      'l' for lizard")
     choice = Kernel.gets().chomp()
 
     if VALID_CHOICES.include?(choice)
