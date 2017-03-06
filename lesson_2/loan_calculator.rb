@@ -68,4 +68,4 @@ end
 monthly_rate = interest_rate.to_f / 12.0 / 100.0
 
 monthly_payment = calc_monthly_payment(month_duration, monthly_rate, loan_amount)
-puts monthly_payment
+puts "Monthly payment is $#{format('%02.2f', monthly_payment)}"
