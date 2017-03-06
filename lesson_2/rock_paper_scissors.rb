@@ -24,7 +24,6 @@ end
 def display_results(player, computer)
   if win?(player, computer)
     prompt("You won!")
-    update_score('w')
   elsif win?(computer, player)
     prompt("Computer won!")
   else
@@ -34,13 +33,6 @@ end
 
 player_score = 0
 computer_score = 0
-
-def update_score(win)
-  if win == 'w'
-    player_score += 1
-  else
-    computer_score += 1
-end
 
 loop do
   choice = ''
@@ -65,6 +57,22 @@ loop do
   Kernel.puts("You chose: #{choice}; Computer chose: #{computer_choice}")
 
   display_results(choice, computer_choice)
+
+  if win?(choice, computer_choice)
+    player_score += 1
+  elsif win?(computer_choice, choice)
+    computer_score += 1
+  end
+
+  puts "Your score: #{player_score}; computer's score: #{computer_score}"
+
+  if player_score == 5
+    puts "You reached 5 points first! You win it all!"
+    break
+  elsif computer_score == 5
+    puts "Computer reached 5 points first. You lost the game. :( "
+    break
+  end
 
   prompt("Do you want to play again? (type 'y' for yes): ")
   answer = Kernel.gets().chomp()
