@@ -125,26 +125,37 @@ def find_at_risk_square(line, brd, marker)
   end
 end
 
- # def play(first_player)
- #   if first_player == 'Computer'
- #     computer_places_piece!(board)
- # end
+def place_piece!(brd, player)
+  if player == 'Player'
+    player_places_piece!(brd)
+  elsif player == 'Computer'
+    computer_places_piece!(brd)
+  end
+end
+
+def alternate_player(player)
+  if player == 'Player'
+    return 'Computer'
+  elsif player == 'Computer'
+    return 'Player'
+  end
+end
 
 
 player_score = 0
 computer_score = 0
-turn = ''
+current_player = ''
 
 if FIRST_TURN == 'Choose'
   loop do
     prompt "Who would you like to go first? (p for player, c for computer) "
     answer = gets.chomp.downcase
     if answer == 'c'
-      turn = 'Computer'
+      current_player = 'Computer'
       puts "computer's turn!"
       break
     elsif answer == 'p'
-      turn = 'Player'
+      current_player = 'Player'
       puts 'players turn...'
       break
     else
@@ -152,9 +163,9 @@ if FIRST_TURN == 'Choose'
     end
   end
 elsif FIRST_TURN == 'Player'
-  turn = 'Player'
+  current_player = 'Player'
 elsif FIRST_TURN == 'Computer'
-  turn = 'Computer'
+  current_player = 'Computer'
 else
   puts "ERROR"
 end
@@ -162,28 +173,35 @@ end
 loop do
   board = initialize_board
 
+  # loop do
+  #   # if turn == 'Player'
+  #   #   display_board(board)
+  #   #
+  #   #   player_places_piece!(board)
+  #   #   break if someone_won?(board) || board_full?(board)
+  #   #
+  #   #   computer_places_piece!(board)
+  #   #   break if someone_won?(board) || board_full?(board)
+  #   # elsif turn == 'Computer'
+  #   #   computer_places_piece!(board)
+  #   #   break if someone_won?(board) || board_full?(board)
+  #   #
+  #   #   display_board(board)
+  #   #
+  #   #   player_places_piece!(board)
+  #   #   break if someone_won?(board) || board_full?(board)
+  #   # else
+  #   #   prompt "Something went wrong, no one is designated to go first"
+  #   # end
+  # end
+
   loop do
-    if turn == 'Player'
-      display_board(board)
-
-      player_places_piece!(board)
-      break if someone_won?(board) || board_full?(board)
-
-      computer_places_piece!(board)
-      break if someone_won?(board) || board_full?(board)
-    elsif turn == 'Computer'
-      computer_places_piece!(board)
-      break if someone_won?(board) || board_full?(board)
-
-      display_board(board)
-
-      player_places_piece!(board)
-      break if someone_won?(board) || board_full?(board)
-    else
-      prompt "Something went wrong, no one is designated to go first"
-    end
+    display_board(board)
+    place_piece!(board, current_player)
+    current_player = alternate_player(current_player)
+    break if someone_won?(board) || board_full?(board)
   end
-
+  
   display_board(board)
 
   if someone_won?(board)
