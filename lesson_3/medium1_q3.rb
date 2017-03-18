@@ -8,9 +8,6 @@ def factors(number)
   divisors
 end
 
-puts factors(10)
-puts factors(0)
-puts factors(-10)
 
 
 
