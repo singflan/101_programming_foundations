@@ -1,4 +1,6 @@
 LIMIT_TO_WIN = 21
+DEALER_LIMIT = 17
+TOTAL_WINS_LIMIT = 5
 SUITS = ['H', 'D', 'S', 'C']
 DECK = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
 
@@ -48,9 +50,9 @@ def determine_winner(hand1, hand2)
   hand1_points = calculate_hand_points(hand1)
   hand2_points = calculate_hand_points(hand2)
 
-  if hand1_points > 21
+  if hand1_points > LIMIT_TO_WIN
     'Player bust'
-  elsif hand2_points > 21
+  elsif hand2_points > LIMIT_TO_WIN
     'Dealer bust'
   elsif hand1_points > hand2_points
     return 'Player'
@@ -76,6 +78,8 @@ def display_results(player, dealer)
   when "Draw"
     prompt "It's a tie!"
   end
+
+  result
 end
 
 def play_again?
@@ -84,6 +88,17 @@ def play_again?
   answer = gets.chomp
   answer.downcase.start_with?('y')
 end
+
+def round_over_output
+  prompt "End of round"
+end
+
+def display_overall_results(p_wins, d_wins)
+  prompt "Player Overall Wins: #{p_wins}; Dealer Overall Wins: #{d_wins}"
+end
+
+player_wins = 0
+dealer_wins = 0
 
 loop do
   prompt "Welcome to Twenty-One!"
@@ -96,7 +111,10 @@ loop do
     player_hand << deal_card(deck)
     dealer_hand << deal_card(deck)
   end
-  prompt "You have: #{player_hand[0]} and #{player_hand[1]} for a total of #{calculate_hand_points(player_hand)}."
+
+  dealer_points = calculate_hand_points(dealer_hand)
+  player_points = calculate_hand_points(player_hand)
+  prompt "You have: #{player_hand[0]} and #{player_hand[1]} for a total of #{player_points}."
   prompt "The dealer has a #{dealer_hand[0]} and ?"
 
   # player turn loop
@@ -111,9 +129,10 @@ loop do
 
     if answer == 'h'
       player_hand << deal_card(deck)
+      player_points = calculate_hand_points(player_hand)
       prompt "You chose to hit!"
       prompt "You drew a #{player_hand.last}. Your cars are now #{player_hand}"
-      prompt "Your point total is now #{calculate_hand_points(player_hand)}"
+      prompt "Your point total is now #{player_points}"
     end
 
     break if answer == 's' || busted?(player_hand)
@@ -121,41 +140,54 @@ loop do
 
   if busted?(player_hand)
     # end game or play again?
-    display_results(player_hand, dealer_hand)
+    result = display_results(player_hand, dealer_hand)
+    dealer_wins += 1
+    round_over_output
+    display_overall_results(player_wins, dealer_wins)
+    break if dealer_wins == TOTAL_WINS_LIMIT
     play_again? ? next : break
   else
-    prompt "You stayed at #{calculate_hand_points(player_hand)}"
+    prompt "You stayed at #{player_points}"
   end
 
   # dealer turn loop
   prompt "Dealer turn..."
 
   loop do
-    break if calculate_hand_points(dealer_hand) >= 17
+    break if dealer_points >= DEALER_LIMIT
 
     prompt "Dealer hits!"
     dealer_hand << deal_card(deck)
+    dealer_points = calculate_hand_points(dealer_hand)
     prompt "Dealer's cards are now: #{dealer_hand}"
   end
 
   if busted?(dealer_hand)
-    prompt "Dealer total is now: #{calculate_hand_points(dealer_hand)}"
-    display_results(player_hand, dealer_hand)
+    prompt "Dealer total is now: #{dealer_points}"
+    result = display_results(player_hand, dealer_hand)
+    player_wins += 1
+    round_over_output
+    display_overall_results(player_wins, dealer_wins)
+    break if player_wins == TOTAL_WINS_LIMIT
     play_again? ? next : break
   else
-    prompt "Dealer stays at #{calculate_hand_points(dealer_hand)}"
+    prompt "Dealer stays at #{dealer_points}"
   end
 
   # compare cards to determine winnner
   puts "=============="
   prompt "Dealer has #{dealer_hand}"
-  prompt "Dealer total is #{calculate_hand_points(dealer_hand)}"
+  prompt "Dealer total is #{dealer_points}"
   prompt "Player has #{player_hand}"
-  prompt "Player total is #{calculate_hand_points(player_hand)}"
+  prompt "Player total is #{player_points}"
   puts "=============="
 
-  display_results(player_hand, dealer_hand)
-
+  result = display_results(player_hand, dealer_hand)
+  player_wins += 1 if result == 'Player'
+  dealer_wins += 1 if result == 'Dealer'
+  round_over_output
+  display_overall_results(player_wins, dealer_wins)
+  break if player_wins == TOTAL_WINS_LIMIT || dealer_wins == TOTAL_WINS_LIMIT
   break unless play_again?
 end
 
