@@ -1,3 +1,4 @@
+require 'pry'
 
 WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                 [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # columns
@@ -5,7 +6,7 @@ WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
 INITIAL_MARKER = ' '
 PLAYER_MARKER = 'X'
 COMPUTER_MARKER = 'O'
-FIRST_TURN = 'Choose' # Choose, Player or Computer
+WHO_GOES_FIRST = 'Computer' # Choose, Player or Computer
 
 def prompt(msg)
   puts "=> #{msg}"
@@ -15,7 +16,7 @@ def joinor(array, delimiter = ', ', word = 'or')
   case array.size
   when 0 then ''
   when 1 then array[0]
-  when 2 then array[0].to_s + " #{word} " + array[1].to_s
+  when 2 then array[0].to_s + ' #{word} ' + array[1].to_s
   else
     array[-1] = "#{word} #{array.last}"
     array.join(delimiter)
@@ -72,7 +73,7 @@ def computer_places_piece!(brd)
     break if square
   end
 
-  # defense
+  # offense
   if !square
     WINNING_LINES.each do |line|
       square = find_at_risk_square(line, brd, PLAYER_MARKER)
@@ -81,11 +82,11 @@ def computer_places_piece!(brd)
   end
 
   # pick middle square if available
-  if !square && brd[5] == ' '
-      square = 5
+  if !square
+    square = brd[5]
   end
 
-  # randomly pick a square
+  randomly pick a square
   if !square
     square = empty_squares(brd).sample
   end
@@ -125,83 +126,37 @@ def find_at_risk_square(line, brd, marker)
   end
 end
 
-def place_piece!(brd, player)
-  if player == 'Player'
-    player_places_piece!(brd)
-  elsif player == 'Computer'
-    computer_places_piece!(brd)
+def first_player(user)
+  if user == 'Choose'
+    prompt("Who would you like to go first? ")
+    answer = gets.chomp
+  end
+  user = answer if answer != nil
+  if user == 'Player'
+
+  else
+
   end
 end
-
-def alternate_player(player)
-  if player == 'Player'
-    return 'Computer'
-  elsif player == 'Computer'
-    return 'Player'
-  end
-end
-
 
 player_score = 0
 computer_score = 0
-current_player = ''
-
-if FIRST_TURN == 'Choose'
-  loop do
-    prompt "Who would you like to go first? (p for player, c for computer) "
-    answer = gets.chomp.downcase
-    if answer == 'c'
-      current_player = 'Computer'
-      puts "computer's turn!"
-      break
-    elsif answer == 'p'
-      current_player = 'Player'
-      puts 'players turn...'
-      break
-    else
-      prompt "Please enter a valid answer"
-    end
-  end
-elsif FIRST_TURN == 'Player'
-  current_player = 'Player'
-elsif FIRST_TURN == 'Computer'
-  current_player = 'Computer'
-else
-  puts "ERROR"
-end
 
 loop do
   board = initialize_board
 
-  # loop do
-  #   # if turn == 'Player'
-  #   #   display_board(board)
-  #   #
-  #   #   player_places_piece!(board)
-  #   #   break if someone_won?(board) || board_full?(board)
-  #   #
-  #   #   computer_places_piece!(board)
-  #   #   break if someone_won?(board) || board_full?(board)
-  #   # elsif turn == 'Computer'
-  #   #   computer_places_piece!(board)
-  #   #   break if someone_won?(board) || board_full?(board)
-  #   #
-  #   #   display_board(board)
-  #   #
-  #   #   player_places_piece!(board)
-  #   #   break if someone_won?(board) || board_full?(board)
-  #   # else
-  #   #   prompt "Something went wrong, no one is designated to go first"
-  #   # end
-  # end
-
   loop do
     display_board(board)
-    place_piece!(board, current_player)
-    current_player = alternate_player(current_player)
+
+    first_player(WHO_GOES_FIRST)
+
+    player_places_piece!(board)
+    break if someone_won?(board) || board_full?(board)
+
+    computer_places_piece!(board)
     break if someone_won?(board) || board_full?(board)
   end
-  
+
   display_board(board)
 
   if someone_won?(board)

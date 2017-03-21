@@ -1,4 +1,5 @@
 LIMIT_TO_WIN = 21
+SUITS = ['H', 'D', 'S', 'C']
 DECK = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
 
 deck = []
@@ -10,49 +11,48 @@ def prompt(msg)
 end
 
 def initalize_deck
-  unshuffled_deck = DECK * 4
-  shuffled_deck = unshuffled_deck.shuffle
-  shuffled_deck
+  SUITS.product(DECK).shuffle
 end
 
 def deal_card(deck)
-  card = deck.shift
+  deck.shift
 end
 
 def calculate_hand_points(hand)
+  card_values = hand.map { |card| card[1] }
+
   points = 0
-  hand.each do |card|
-    case card
+  card_values.each do |card_value|
+    case card_value
     when '10', 'J', 'Q', 'K'
       then points += 10
     when '2', '3', '4', '5', '6', '7', '8', '9'
-      then points += card.to_i
+      then points += card_value.to_i
     when 'A'
       then points += 11
     end
   end
 
-  ace_card_count = 0
-  hand.select do |card|
-    if card == 'A'
-      ace_card_count += 1
-    end
-    ace_card_count.times do |card|
-      points -= 10 if points > 21
-    end
+  card_values.select { |card_value| card_value == 'A' }.count.times do
+    points -= 10 if points > 21
   end
 
   points
 end
 
 def busted?(hand)
-  return calculate_hand_points(hand) > LIMIT_TO_WIN
+  calculate_hand_points(hand) > LIMIT_TO_WIN
 end
 
 def determine_winner(hand1, hand2)
   hand1_points = calculate_hand_points(hand1)
   hand2_points = calculate_hand_points(hand2)
-  if hand1_points > hand2_points
+
+  if hand1_points > 21
+    'Player bust'
+  elsif hand2_points > 21
+    'Dealer bust'
+  elsif hand1_points > hand2_points
     return 'Player'
   elsif hand2_points > hand1_points
     return 'Dealer'
@@ -61,71 +61,102 @@ def determine_winner(hand1, hand2)
   end
 end
 
-def display_results(winning_player, player, dealer)
-  prompt "#{winning_player} wins!"
-  prompt "Player's points: #{calculate_hand_points(player)}; Dealer's points: #{calculate_hand_points(dealer)}"
+def display_results(player, dealer)
+  result = determine_winner(player, dealer)
+
+  case result
+  when 'Player bust'
+    prompt "You busted! Dealer wins!"
+  when 'Dealer bust'
+    prompt "Dealer busted! You win!"
+  when 'Player'
+    prompt "You win!"
+  when 'Dealer'
+    prompt "Dealer wins!"
+  when "Draw"
+    prompt "It's a tie!"
+  end
+end
+
+def play_again?
+  puts "-------------"
+  prompt "Do you want to play again? (y or n)"
+  answer = gets.chomp
+  answer.downcase.start_with?('y')
 end
 
 loop do
+  prompt "Welcome to Twenty-One!"
+
   deck = initalize_deck
   player_hand = []
   dealer_hand = []
+  # deal first cards
   2.times do
     player_hand << deal_card(deck)
     dealer_hand << deal_card(deck)
   end
-  prompt "You have #{player_hand}"
-  prompt "Your point total is #{calculate_hand_points(player_hand)}"
-  prompt "The dealer has a #{dealer_hand[0]}"
+  prompt "You have: #{player_hand[0]} and #{player_hand[1]} for a total of #{calculate_hand_points(player_hand)}."
+  prompt "The dealer has a #{dealer_hand[0]} and ?"
 
-  choice = ''
-  answer = nil
   # player turn loop
   loop do
-    prompt "Do you want to hit or stay? (h for hit, s for stay)"
-    answer = gets.chomp.downcase
+    answer = nil
+    loop do
+      prompt "Do you want to hit or stay? (h for hit, s for stay)"
+      answer = gets.chomp.downcase
+      break if ['h', 's'].include?(answer)
+      prompt "Sorry, must enter 'h' or 's'."
+    end
+
     if answer == 'h'
       player_hand << deal_card(deck)
-      prompt("You drew a #{player_hand.last}. Your point total is now #{calculate_hand_points(player_hand)}")
-    elsif answer != 's'
-      prompt "Invalid choice."
+      prompt "You chose to hit!"
+      prompt "You drew a #{player_hand.last}. Your cars are now #{player_hand}"
+      prompt "Your point total is now #{calculate_hand_points(player_hand)}"
     end
+
     break if answer == 's' || busted?(player_hand)
   end
 
   if busted?(player_hand)
     # end game or play again?
-    loop do
-      prompt "You busted, the game is over. Do you want to play again? (y or n) "
-      answer = gets.chomp.downcase
-      break if answer == 'y' || answer == 'n'
-      prompt "Invalid answer, please enter 'y' or 'n'. "
-    end
-    next if answer == 'y'
-    break if answer == 'n'
+    display_results(player_hand, dealer_hand)
+    play_again? ? next : break
   else
-    puts "You chose to stay!"
+    prompt "You stayed at #{calculate_hand_points(player_hand)}"
   end
 
   # dealer turn loop
+  prompt "Dealer turn..."
+
   loop do
-    break if busted?(dealer_hand) || calculate_hand_points(dealer_hand) >= 17
+    break if calculate_hand_points(dealer_hand) >= 17
+
+    prompt "Dealer hits!"
     dealer_hand << deal_card(deck)
+    prompt "Dealer's cards are now: #{dealer_hand}"
   end
 
   if busted?(dealer_hand)
-    loop do
-      prompt "Dealer busted, you win! Do you want to play again? (y or n) "
-      answer = gets.chomp.downcase
-      break if answer == 'y' || answer == 'n'
-      prompt "Invalid answer, please enter 'y' or 'n'. "
-    end
-    next if answer == 'y'
-    break if answer == 'n'
+    prompt "Dealer total is now: #{calculate_hand_points(dealer_hand)}"
+    display_results(player_hand, dealer_hand)
+    play_again? ? next : break
+  else
+    prompt "Dealer stays at #{calculate_hand_points(dealer_hand)}"
   end
+
   # compare cards to determine winnner
-  winner = determine_winner(player_hand, dealer_hand)
-  display_results(winner, player_hand, dealer_hand)
+  puts "=============="
+  prompt "Dealer has #{dealer_hand}"
+  prompt "Dealer total is #{calculate_hand_points(dealer_hand)}"
+  prompt "Player has #{player_hand}"
+  prompt "Player total is #{calculate_hand_points(player_hand)}"
+  puts "=============="
+
+  display_results(player_hand, dealer_hand)
+
+  break unless play_again?
 end
 
-prompt "Thank you for playing 21!"
+prompt "Thank you for playing 21! Good-bye!"
