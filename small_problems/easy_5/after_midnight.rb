@@ -3,7 +3,7 @@ def time_of_day(minutes)
   num_times_over_24 = hour / 24
   hour = hour - (24 * leftover) # this is to take out extra days
 
-  puts "\"#{sprintf('%02d', hour)}: #{minutes}"
+  puts "\"#{sprintf('%02d', hour)}: #{minutes}"                                      bjk45
 
 end
 
