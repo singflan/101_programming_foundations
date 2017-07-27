@@ -1,5 +1,6 @@
 def merge_sort(array)
-
+	
+	
 end
 
 puts merge_sort([9, 5, 7, 1]) == [1, 5, 7, 9]
